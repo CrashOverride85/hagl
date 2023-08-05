@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2018-2020 Mika Tuupola
+Copyright (c) 2018-2023 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,10 @@ SPDX-License-Identifier: MIT
 #ifndef _HSL_H
 #define _HSL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef struct {
     double h;
     double s;
@@ -45,5 +49,8 @@ typedef struct {
 
 rgb_t hsl_to_rgb888(hsl_t *hsl);
 
-#endif /* _HSL_H */
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
+#endif /* _HSL_H */

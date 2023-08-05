@@ -32,62 +32,41 @@ SPDX-License-Identifier: MIT
 
 */
 
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stddef.h>
-
-#include "rgb332.h"
-#include "rgb565.h"
-#include "fontx.h"
-#include "hagl/bitmap.h"
-#include "hagl/clip.h"
-#include "hagl/window.h"
-
-#include "hagl.h"
-#include "hagl_hal.h"
+#include "hagl/line.h"
+#include "hagl/surface.h"
+#include "hagl/color.h"
 
 void
-hagl_clear(void *_surface)
+hagl_draw_vline_xyh(void const *_surface, int16_t x0, int16_t y0, uint16_t h, hagl_color_t color)
 {
-    hagl_surface_t *surface = _surface;
+    const hagl_surface_t *surface = _surface;
 
-    uint16_t x0 = surface->clip.x0;
-    uint16_t y0 = surface->clip.y0;
-    uint16_t x1 = surface->clip.x1;
-    uint16_t y1 = surface->clip.y1;
+    if (surface->vline) {
+        int16_t height = h;
 
-    hagl_set_clip(surface, 0, 0, surface->width - 1, surface->height - 1);
-    hagl_fill_rectangle(surface, 0, 0, surface->width - 1, surface->height - 1, 0x00);
-    hagl_set_clip(surface, x0, y0, x1, y1);
+        /* x0 or y0 is over the edge, nothing to do. */
+        if ((x0 > surface->clip.x1) || (x0 < surface->clip.x0) || (y0 > surface->clip.y1))  {
+            return;
+        }
+
+        /* y0 is top of clip window, ignore start part. */
+        if (y0 < surface->clip.y0) {
+            height = height + y0;
+            y0 = surface->clip.y0;
+        }
+
+        /* Everything outside clip window, nothing to do. */
+        if (height <= 0)  {
+            return;
+        }
+
+        /* Cut anything going over right edge. */
+        if (((y0 + height) > surface->clip.y1))  {
+            height = height - (y0 + height - 1 - surface->clip.y1);
+        }
+
+        surface->vline(&surface, x0, y0, height, color);
+    } else {
+        hagl_draw_line(surface, x0, y0, x0, y0 + h - 1, color);
+    }
 }
-
-hagl_backend_t *
-hagl_init(void)
-{
-    static hagl_backend_t backend;
-    memset(&backend, 0, sizeof(hagl_backend_t));
-
-    hagl_hal_init(&backend);
-    hagl_set_clip(&backend, 0, 0,  backend.width - 1,  backend.height - 1);
-    return &backend;
-};
-
-size_t
-hagl_flush(hagl_backend_t *backend)
-{
-    if (backend->flush) {
-        return backend->flush(backend);
-    }
-    return 0;
-};
-
-void
-hagl_close(hagl_backend_t *backend)
-{
-    if (backend->close) {
-        backend->close(backend);
-    }
-};

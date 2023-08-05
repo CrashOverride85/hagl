@@ -1,3 +1,4 @@
+
 /*
 
 MIT License
@@ -32,74 +33,71 @@ SPDX-License-Identifier: MIT
 
 */
 
-#ifndef _HAGL_FPS_H
-#define _HAGL_FPS_H
+#ifndef _HAGL_HLINE_H
+#define _HAGL_HLINE_H
 
-#include <time.h>
 #include <stdint.h>
+#include <stdlib.h>
+
+#include "hagl/color.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct {
-    clock_t start;
-    uint32_t frames;
-    float smoothing;
-    float current;
-} fps_instance_t;
+/**
+ * Draw a horizontal line
+ *
+ * Output will be clipped to the current clip window.
+ *
+ * @param surface
+ * @param x0
+ * @param y0
+ * @param width
+ * @param color
+ */
+
+void
+hagl_draw_hline_xyw(void const *surface, int16_t x0, int16_t y0, uint16_t width, hagl_color_t color);
 
 /**
- * Initialize the given FPS counter instance
+ * Draw a horizontal line
+ *
+ * Output will be clipped to the current clip window.
+ *
+ * @param surface
+ * @param x0
+ * @param y0
+ * @param x1
+ * @param color
  */
-static inline void
-fps_init(fps_instance_t *fps)
-{
-    fps->start = clock() - 1;
-    fps->frames = 0;
-    fps->current = 0.0;
 
-    /* Larger value is less smoothing. */
-    if (!fps->smoothing) {
-        fps->smoothing = 0.98;
-    }
+static inline void
+hagl_draw_hline_xyx(void const *surface, int16_t x0, int16_t y0, int16_t x1, hagl_color_t color)
+{
+    hagl_draw_hline_xyw(surface, x0, y0, abs(x1 - x0) + 1, color);
 }
 
 /**
- * Update the given FPS counter instance
+ * Draw a horizontal line
  *
- * Use to measure the rendering speed. Should be called always
- * after flushing the back buffer.
+ * Output will be clipped to the current clip window.
  *
- * @return current fps
+ * @param surface
+ * @param x0
+ * @param y0
+ * @param width
+ * @param color
  */
-static inline float
-fps_update(fps_instance_t *fps)
-{
-    float measured = 0.0;
-    clock_t ticks = clock() - fps->start;;
 
-    fps->frames++;
-
-    measured = fps->frames / (float) ticks * CLOCKS_PER_SEC;
-    fps->current = (measured * fps->smoothing) + (fps->current * (1.0 - fps->smoothing));
-
-    return fps->current;
-}
-
-/**
- * Reset the given FPS counter instance
- */
 static inline void
-fps_reset(fps_instance_t *fps)
+hagl_draw_hline(void const *surface, int16_t x0, int16_t y0, uint16_t width, hagl_color_t color)
 {
-    fps->start = clock() - 1;
-    fps->frames = 0;
-    fps->current = 0;
+    hagl_draw_hline_xyw(surface, x0, y0, width, color);
 }
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* HAGL_FPS_H */
+#endif /* _HAGL_HLINE_H */

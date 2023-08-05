@@ -1,8 +1,9 @@
+
 /*
 
 MIT License
 
-Copyright (c) 2018-2020 Mika Tuupola
+Copyright (c) 2018-2023 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,14 +33,34 @@ SPDX-License-Identifier: MIT
 
 */
 
-#ifndef _HAGL_CLIP_H
-#define _HAGL_CLIP_H
+#ifndef _HAGL_LINE_H
+#define _HAGL_LINE_H
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "window.h"
+#include "hagl/color.h"
 
-bool clip_line(int16_t *x0, int16_t *y0, int16_t *x1, int16_t *y1, window_t window);
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
-#endif /* _HAGL_CLIP_H */
+/**
+ * Draw a line
+ *
+ * Output will be clipped to the current clip window.
+ *
+ * @param surface
+ * @param x0
+ * @param y0
+ * @param x1
+ * @param y1
+ * @param color
+ */
+void
+hagl_draw_line(void const *surface, int16_t x0, int16_t y0, int16_t x1, int16_t y1, hagl_color_t color);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* _HAGL_LINE_H */

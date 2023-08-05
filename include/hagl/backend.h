@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2018-2023 Mika Tuupola
+Copyright (c) 2023 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,74 +32,42 @@ SPDX-License-Identifier: MIT
 
 */
 
-#ifndef _HAGL_FPS_H
-#define _HAGL_FPS_H
+#ifndef _HAGL_BACKEND_H
+#define _HAGL_BACKEND_H
 
-#include <time.h>
-#include <stdint.h>
+#include <stddef.h>
+
+#include "hagl/bitmap.h"
+#include "hagl/window.h"
+#include "hagl/color.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 typedef struct {
-    clock_t start;
-    uint32_t frames;
-    float smoothing;
-    float current;
-} fps_instance_t;
+    /* Common to all surfaces. */
+    int16_t width;
+    int16_t height;
+    uint8_t depth;
+    hagl_window_t clip;
+    void (*put_pixel)(void *self, int16_t x0, int16_t y0, hagl_color_t color);
+    hagl_color_t (*get_pixel)(void *self, int16_t x0, int16_t y0);
+    hagl_color_t (*color)(void *self, uint8_t r, uint8_t g, uint8_t b);
+    void (*blit)(void *self, int16_t x0, int16_t y0, hagl_bitmap_t *src);
+    void (*scale_blit)(void *self, uint16_t x0, uint16_t y0, uint16_t w, uint16_t h, hagl_bitmap_t *src);
+    void (*hline)(void *self, int16_t x0, int16_t y0, uint16_t width, hagl_color_t color);
+    void (*vline)(void *self, int16_t x0, int16_t y0, uint16_t height, hagl_color_t color);
 
-/**
- * Initialize the given FPS counter instance
- */
-static inline void
-fps_init(fps_instance_t *fps)
-{
-    fps->start = clock() - 1;
-    fps->frames = 0;
-    fps->current = 0.0;
-
-    /* Larger value is less smoothing. */
-    if (!fps->smoothing) {
-        fps->smoothing = 0.98;
-    }
-}
-
-/**
- * Update the given FPS counter instance
- *
- * Use to measure the rendering speed. Should be called always
- * after flushing the back buffer.
- *
- * @return current fps
- */
-static inline float
-fps_update(fps_instance_t *fps)
-{
-    float measured = 0.0;
-    clock_t ticks = clock() - fps->start;;
-
-    fps->frames++;
-
-    measured = fps->frames / (float) ticks * CLOCKS_PER_SEC;
-    fps->current = (measured * fps->smoothing) + (fps->current * (1.0 - fps->smoothing));
-
-    return fps->current;
-}
-
-/**
- * Reset the given FPS counter instance
- */
-static inline void
-fps_reset(fps_instance_t *fps)
-{
-    fps->start = clock() - 1;
-    fps->frames = 0;
-    fps->current = 0;
-}
+    /* Specific to backend. */
+    size_t (*flush)(void *self);
+    void (*close)(void *self);
+    uint8_t *buffer;
+    uint8_t *buffer2;
+} hagl_backend_t;
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* HAGL_FPS_H */
+#endif /* _HAGL_BACKEND_H */

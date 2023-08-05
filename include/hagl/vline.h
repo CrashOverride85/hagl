@@ -32,74 +32,69 @@ SPDX-License-Identifier: MIT
 
 */
 
-#ifndef _HAGL_FPS_H
-#define _HAGL_FPS_H
+#ifndef _HAGL_VLINE_H
+#define _HAGL_VLINE_H
 
-#include <time.h>
 #include <stdint.h>
+#include <stdlib.h>
+
+#include "hagl/color.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct {
-    clock_t start;
-    uint32_t frames;
-    float smoothing;
-    float current;
-} fps_instance_t;
+/**
+ * Draw a vertical line
+ *
+ * Output will be clipped to the current clip window.
+ *
+ * @param surface
+ * @param x0
+ * @param y0
+ * @param height
+ * @param color
+ */
+void
+hagl_draw_vline_xyh(void const *surface, int16_t x0, int16_t y0, uint16_t height, hagl_color_t color);
 
 /**
- * Initialize the given FPS counter instance
+ * Draw a vertical line
+ *
+ * Output will be clipped to the current clip window.
+ *
+ * @param surface
+ * @param x0
+ * @param y0
+ * @param y1
+ * @param color
  */
 static inline void
-fps_init(fps_instance_t *fps)
+hagl_draw_vline_xyy(void const *surface, int16_t x0, int16_t y0, int16_t y1, hagl_color_t color)
 {
-    fps->start = clock() - 1;
-    fps->frames = 0;
-    fps->current = 0.0;
-
-    /* Larger value is less smoothing. */
-    if (!fps->smoothing) {
-        fps->smoothing = 0.98;
-    }
+    hagl_draw_vline_xyh(surface, x0, y0, abs(y1 - y0) + 1, color);
 }
 
 /**
- * Update the given FPS counter instance
+ * Draw a vertical line
  *
- * Use to measure the rendering speed. Should be called always
- * after flushing the back buffer.
+ * Output will be clipped to the current clip window.
  *
- * @return current fps
- */
-static inline float
-fps_update(fps_instance_t *fps)
-{
-    float measured = 0.0;
-    clock_t ticks = clock() - fps->start;;
-
-    fps->frames++;
-
-    measured = fps->frames / (float) ticks * CLOCKS_PER_SEC;
-    fps->current = (measured * fps->smoothing) + (fps->current * (1.0 - fps->smoothing));
-
-    return fps->current;
-}
-
-/**
- * Reset the given FPS counter instance
+ * @param surface
+ * @param x0
+ * @param y0
+ * @param height
+ * @param color
  */
 static inline void
-fps_reset(fps_instance_t *fps)
+hagl_draw_vline(void const *surface, int16_t x0, int16_t y0, uint16_t height, hagl_color_t color)
 {
-    fps->start = clock() - 1;
-    fps->frames = 0;
-    fps->current = 0;
+    hagl_draw_vline_xyh(surface, x0, y0, height, color);
 }
+
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* HAGL_FPS_H */
+#endif /* _HAGL_VLINE_H */

@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2018-2020 Mika Tuupola
+Copyright (c) 2018-2023 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,16 +32,16 @@ SPDX-License-Identifier: MIT
 
 */
 
-#ifdef NO_MENUCONFIG
-
-/* If you don't use menuconfig change the settings here. */
-#define TJPGD_NEEDS_BYTESWAP
-
-# else
-
+#ifdef HAGL_INCLUDE_SDKCONFIG_H
 #include "sdkconfig.h"
+
 #ifdef CONFIG_HAGL_TJPGD_NEEDS_BYTESWAP
 #define TJPGD_NEEDS_BYTESWAP
 #endif /* CONFIG_HAGL_TJPGD_NEEDS_BYTESWAP */
 
-#endif /* NO_MENUCONFIG */
+# else
+
+/* If you don't use menuconfig change the settings here. */
+#define TJPGD_NEEDS_BYTESWAP
+
+#endif /* HAGL_INCLUDE_SDKCONFIG_H */

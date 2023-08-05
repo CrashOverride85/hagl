@@ -32,62 +32,47 @@ SPDX-License-Identifier: MIT
 
 */
 
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stddef.h>
+#include <stdint.h>
 
-#include "rgb332.h"
-#include "rgb565.h"
-#include "fontx.h"
-#include "hagl/bitmap.h"
-#include "hagl/clip.h"
-#include "hagl/window.h"
-
-#include "hagl.h"
-#include "hagl_hal.h"
+#include "hagl/color.h"
+#include "hagl/surface.h"
 
 void
-hagl_clear(void *_surface)
+hagl_put_pixel(void const *_surface, int16_t x0, int16_t y0, hagl_color_t color)
 {
-    hagl_surface_t *surface = _surface;
+    const hagl_surface_t *surface = _surface;
 
-    uint16_t x0 = surface->clip.x0;
-    uint16_t y0 = surface->clip.y0;
-    uint16_t x1 = surface->clip.x1;
-    uint16_t y1 = surface->clip.y1;
+    /* x0 or y0 is before the edge, nothing to do. */
+    if ((x0 < surface->clip.x0) || (y0 < surface->clip.y0))  {
+        return;
+    }
 
-    hagl_set_clip(surface, 0, 0, surface->width - 1, surface->height - 1);
-    hagl_fill_rectangle(surface, 0, 0, surface->width - 1, surface->height - 1, 0x00);
-    hagl_set_clip(surface, x0, y0, x1, y1);
+    /* x0 or y0 is after the edge, nothing to do. */
+    if ((x0 > surface->clip.x1) || (y0 > surface->clip.y1)) {
+        return;
+    }
+
+    /* If still in bounds set the pixel. */
+    surface->put_pixel(&surface, x0, y0, color);
 }
 
-hagl_backend_t *
-hagl_init(void)
+hagl_color_t
+hagl_get_pixel(void const *_surface, int16_t x0, int16_t y0)
 {
-    static hagl_backend_t backend;
-    memset(&backend, 0, sizeof(hagl_backend_t));
-
-    hagl_hal_init(&backend);
-    hagl_set_clip(&backend, 0, 0,  backend.width - 1,  backend.height - 1);
-    return &backend;
-};
-
-size_t
-hagl_flush(hagl_backend_t *backend)
-{
-    if (backend->flush) {
-        return backend->flush(backend);
+    const hagl_surface_t *surface = _surface;
+    /* x0 or y0 is before the edge, nothing to do. */
+    if ((x0 < surface->clip.x0) || (y0 < surface->clip.y0))  {
+        return hagl_color(surface, 0, 0, 0);
     }
-    return 0;
-};
 
-void
-hagl_close(hagl_backend_t *backend)
-{
-    if (backend->close) {
-        backend->close(backend);
+    /* x0 or y0 is after the edge, nothing to do. */
+    if ((x0 > surface->clip.x1) || (y0 > surface->clip.y1)) {
+        return hagl_color(surface, 0, 0, 0);
     }
-};
+
+    if (surface->get_pixel) {
+        return surface->get_pixel(&surface, x0, y0);
+    }
+
+    return hagl_color(surface, 0, 0, 0);
+}

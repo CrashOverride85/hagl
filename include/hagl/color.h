@@ -1,8 +1,9 @@
+
 /*
 
 MIT License
 
-Copyright (c) 2018-2020 Mika Tuupola
+Copyright (c) 2018-2023 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,33 +28,34 @@ SOFTWARE.
 This file is part of the HAGL graphics library:
 https://github.com/tuupola/hagl
 
+
 SPDX-License-Identifier: MIT
 
 */
 
-#include <stdint.h>
+#ifndef _HAGL_COLOR_H
+#define _HAGL_COLOR_H
 
-#ifndef _BITMAP_H
-#define _BITMAP_H
+#include <hagl_hal_color.h>
 
-#define BITMAP_SIZE(width, height, depth) (width * (depth / 8) * height)
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
-/*
-Pitch is bytes per row. Depth is number of bits per pixel. Size is size
-in bytes.
-*/
-typedef struct {
-    uint16_t width;
-    uint16_t height;
-    uint16_t pitch;
-    uint8_t depth;
-    uint32_t size;
-    uint8_t *buffer;
-} bitmap_t;
+/**
+ * Convert RGB to color
+ *
+ * Returns color type  defined by the HAL. Most often it is an
+ * uint16_t RGB565 color.
+ *
+ * @param surface
+ * @return color
+ */
+hagl_color_t
+hagl_color(void const *surface, uint8_t r, uint8_t g, uint8_t b);
 
-uint32_t bitmap_size(bitmap_t *bitmap);
-void bitmap_init(bitmap_t *bitmap, uint8_t *buffer);
-void bitmap_blit(int16_t x0, int16_t y0, bitmap_t *src, bitmap_t *dst);
-void bitmap_scale_blit(int16_t x0, int16_t y0, uint16_t w, uint16_t h, bitmap_t *src, bitmap_t *dst);
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
-#endif /* _BITMAP_H */
+#endif /* _HAGL_COLOR_H */

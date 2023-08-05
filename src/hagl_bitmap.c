@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2018-2020 Mika Tuupola
+Copyright (c) 2018-2023 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,27 +37,60 @@ SPDX-License-Identifier: MIT
 #include <string.h>
 #include <math.h>
 
-#include "bitmap.h"
+#include "hagl/bitmap.h"
 
-/* Get bitmap size in bytes. */
-uint32_t bitmap_size(bitmap_t *bitmap) {
-    return bitmap->width * (bitmap->depth / 8) * bitmap->height;
-};
+#include <stdio.h>
+#include "hagl_hal.h"
 
-/* Initialise bitmap with given buffer. */
-void bitmap_init(bitmap_t *bitmap, uint8_t *buffer)
+static void
+put_pixel(void *_bitmap, int16_t x0, int16_t y0, hagl_color_t color)
 {
-    bitmap->pitch = bitmap->width * (bitmap->depth / 8);
-    bitmap->size = bitmap->pitch * bitmap->height;
-    bitmap->buffer = buffer;
+    hagl_bitmap_t *bitmap = _bitmap;
+
+    hagl_color_t *ptr = (hagl_color_t *) (bitmap->buffer + bitmap->pitch * y0 + (bitmap->depth / 8) * x0);
+    *ptr = color;
+}
+
+static hagl_color_t
+get_pixel(void *_bitmap, int16_t x0, int16_t y0)
+{
+    hagl_bitmap_t *bitmap = _bitmap;
+    return *(hagl_color_t *) (bitmap->buffer + bitmap->pitch * y0 + (bitmap->depth / 8) * x0);
+}
+
+void
+hline(void *_bitmap, int16_t x0, int16_t y0, uint16_t width, hagl_color_t color)
+{
+    hagl_bitmap_t *bitmap = _bitmap;
+
+    hagl_color_t *ptr = (hagl_color_t *) (bitmap->buffer + bitmap->pitch * y0 + (bitmap->depth / 8) * x0);
+    for (uint16_t x = 0; x < width; x++) {
+        *ptr++ = color;
+    }
+}
+
+void
+vline(void *_bitmap, int16_t x0, int16_t y0, uint16_t height, hagl_color_t color)
+{
+    hagl_bitmap_t *bitmap = _bitmap;
+
+    hagl_color_t *ptr = (hagl_color_t *) (bitmap->buffer + bitmap->pitch * y0 + (bitmap->depth / 8) * x0);
+    for (uint16_t y = 0; y < height; y++) {
+        *ptr = color;
+        ptr += bitmap->pitch / (bitmap->depth / 8);
+    }
 }
 
 /*
- * Blit source bitmap to a destination bitmap.
+ * Blit source bitmap to a destination bitmap->
  */
 
-void bitmap_blit(int16_t x0, int16_t y0, bitmap_t *src, bitmap_t *dst)
+static void
+blit(void *_dst, int16_t x0, int16_t y0, void *_src)
 {
+    hagl_bitmap_t *dst = _dst;
+    hagl_bitmap_t *src = _src;
+
     int16_t srcw = src->width;
     int16_t srch = src->height;
     int16_t x1 = 0;
@@ -92,7 +125,7 @@ void bitmap_blit(int16_t x0, int16_t y0, bitmap_t *src, bitmap_t *dst)
         srch = dst->height - y0;
     }
 
-   /* Everthing outside viewport, nothing to do. */
+    /* Everthing outside viewport, nothing to do. */
     if ((srcw < 0 ) || (srch < 0))  {
         return;
     }
@@ -120,8 +153,12 @@ void bitmap_blit(int16_t x0, int16_t y0, bitmap_t *src, bitmap_t *dst)
  * http://www.davdata.nl/math/bmresize.html
  */
 
-void bitmap_scale_blit(int16_t x0, int16_t y0, uint16_t dstw, uint16_t dsth, bitmap_t *src, bitmap_t *dst)
+static void
+scale_blit(void *_dst, int16_t x0, int16_t y0, uint16_t dstw, uint16_t dsth, void *_src)
 {
+    hagl_bitmap_t *dst = _dst;
+    hagl_bitmap_t *src = _src;
+
     uint16_t px, py;
 
     uint16_t srcw = src->width;
@@ -172,8 +209,8 @@ void bitmap_scale_blit(int16_t x0, int16_t y0, uint16_t dstw, uint16_t dsth, bit
             }
             dstptr += dst->pitch / (dst->depth / 8) - dstw;
         }
-    /* Assume 1 byte per pixel. */
     } else {
+        /* Assume 1 byte per pixel. */
         uint8_t *dstptr = (uint8_t *) (dst->buffer + dst->pitch * y0 + (dst->depth / 8) * x0);
         uint8_t *srcptr = (uint8_t *) src->buffer;
         for (uint16_t y = 0; y < dsth; y++) {
@@ -187,3 +224,27 @@ void bitmap_scale_blit(int16_t x0, int16_t y0, uint16_t dstw, uint16_t dsth, bit
     }
 }
 
+/* Initialise bitmap with given buffer. */
+void
+hagl_bitmap_init(hagl_bitmap_t *bitmap, int16_t width, uint16_t height, uint8_t depth, void *buffer)
+{
+    bitmap->width = width;
+    bitmap->height = height;
+    bitmap->depth = depth;
+    bitmap->buffer = (uint8_t *) buffer;
+
+    bitmap->pitch = bitmap->width * (bitmap->depth / 8);
+    bitmap->size = bitmap->pitch * bitmap->height;
+
+    bitmap->clip.x0 = 0;
+    bitmap->clip.y0 = 0;
+    bitmap->clip.x1 = bitmap->width - 1;
+    bitmap->clip.y1 = bitmap->height - 1;
+
+    bitmap->put_pixel = put_pixel;
+    bitmap->get_pixel = get_pixel;
+    bitmap->hline = hline;
+    bitmap->vline = vline;
+    bitmap->blit = blit;
+    bitmap->scale_blit = scale_blit;
+}

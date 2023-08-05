@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2018-2020 Mika Tuupola
+Copyright (c) 2018-2023 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,10 @@ SPDX-License-Identifier: MIT
 #ifndef _RGB888_H
 #define _RGB888_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef struct {
     uint8_t r;
     uint8_t g;
@@ -46,18 +50,24 @@ typedef struct {
 hsl_t rgb888_to_hsl(rgb_t *rgb);
 uint16_t rgb888_to_rgb565(rgb_t *input);
 
-static inline int min(int a, int b) {
+static inline int min(int a, int b)
+{
     if (a > b) {
         return b;
     };
     return a;
 }
 
-static inline int max(int a, int b) {
+static inline int max(int a, int b)
+{
     if (a > b) {
         return a;
     }
     return b;
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* _RGB888_H */

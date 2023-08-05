@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2018-2020 Mika Tuupola
+Copyright (c) 2018-2023 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,8 @@ SPDX-License-Identifier: MIT
 
 #include "rgb565.h"
 
-uint16_t rgb565(uint8_t r, uint8_t g, uint8_t b)
+uint16_t
+rgb565(uint8_t r, uint8_t g, uint8_t b)
 {
     uint16_t rgb;
 
@@ -46,7 +47,8 @@ uint16_t rgb565(uint8_t r, uint8_t g, uint8_t b)
     return rgb;
 }
 
-rgb_t rgb565_to_rgb888(uint16_t *input)
+rgb_t
+rgb565_to_rgb888(uint16_t *input)
 {
     rgb_t rgb;
 

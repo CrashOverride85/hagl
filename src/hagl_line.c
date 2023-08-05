@@ -32,62 +32,54 @@ SPDX-License-Identifier: MIT
 
 */
 
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <stddef.h>
 
-#include "rgb332.h"
-#include "rgb565.h"
-#include "fontx.h"
-#include "hagl/bitmap.h"
+#include "hagl/color.h"
+#include "hagl/surface.h"
+#include "hagl/line.h"
 #include "hagl/clip.h"
-#include "hagl/window.h"
-
 #include "hagl.h"
-#include "hagl_hal.h"
 
 void
-hagl_clear(void *_surface)
+hagl_draw_line(void const *_surface, int16_t x0, int16_t y0, int16_t x1, int16_t y1, hagl_color_t color)
 {
-    hagl_surface_t *surface = _surface;
+    const hagl_surface_t *surface = _surface;
 
-    uint16_t x0 = surface->clip.x0;
-    uint16_t y0 = surface->clip.y0;
-    uint16_t x1 = surface->clip.x1;
-    uint16_t y1 = surface->clip.y1;
+    /* Clip coordinates to fit clip window. */
+    if (false == hagl_clip_line(&x0, &y0, &x1, &y1, surface->clip)) {
+        return;
+    }
 
-    hagl_set_clip(surface, 0, 0, surface->width - 1, surface->height - 1);
-    hagl_fill_rectangle(surface, 0, 0, surface->width - 1, surface->height - 1, 0x00);
-    hagl_set_clip(surface, x0, y0, x1, y1);
+    int16_t dx;
+    int16_t sx;
+    int16_t dy;
+    int16_t sy;
+    int16_t err;
+    int16_t e2;
+
+    dx = ABS(x1 - x0);
+    sx = x0 < x1 ? 1 : -1;
+    dy = ABS(y1 - y0);
+    sy = y0 < y1 ? 1 : -1;
+    err = (dx > dy ? dx : -dy) / 2;
+
+    while (1) {
+        hagl_put_pixel(surface, x0, y0, color);
+
+        if (x0 == x1 && y0 == y1) {
+            break;
+        };
+
+        e2 = err + err;
+
+        if (e2 > -dx) {
+            err -= dy;
+            x0 += sx;
+        }
+
+        if (e2 < dy) {
+            err += dx;
+            y0 += sy;
+        }
+    }
 }
-
-hagl_backend_t *
-hagl_init(void)
-{
-    static hagl_backend_t backend;
-    memset(&backend, 0, sizeof(hagl_backend_t));
-
-    hagl_hal_init(&backend);
-    hagl_set_clip(&backend, 0, 0,  backend.width - 1,  backend.height - 1);
-    return &backend;
-};
-
-size_t
-hagl_flush(hagl_backend_t *backend)
-{
-    if (backend->flush) {
-        return backend->flush(backend);
-    }
-    return 0;
-};
-
-void
-hagl_close(hagl_backend_t *backend)
-{
-    if (backend->close) {
-        backend->close(backend);
-    }
-};

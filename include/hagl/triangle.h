@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2018-2020 Mika Tuupola
+Copyright (c) 2018-2023 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,14 +32,55 @@ SPDX-License-Identifier: MIT
 
 */
 
-#ifndef _HAGL_WINDOW_H
-#define _HAGL_WINDOW_H
+#ifndef _HAGL_TRIANGLE_H
+#define _HAGL_TRIANGLE_H
 
-typedef struct {
-    uint16_t x0;
-    uint16_t y0;
-    uint16_t x1;
-    uint16_t y1;
-} window_t;
+#include <stdint.h>
 
-#endif /* _HAGL_WINDOW_H */
+#include "hagl/color.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+/**
+ * Draw a triangle
+ *
+ * Output will be clipped to the current clip window. Internally
+ * uses hagl_draw_polygon() to draw the triangle.
+ *
+ * @param surface
+ * @param x0
+ * @param y0
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y3
+ * @param color
+ */
+void
+hagl_draw_triangle(void const *surface, int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, hagl_color_t color);
+
+/**
+ * Draw a filled triangle
+ *
+ * Output will be clipped to the current clip window. Internally
+ * uses hagl_fill_polygon() to draw the triangle.
+ *
+ * @param surface
+ * @param x0
+ * @param y0
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y3
+ * @param color
+ */
+void
+hagl_fill_triangle(void const *surface, int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, hagl_color_t color);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* _HAGL_TRIANGLE_H */

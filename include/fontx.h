@@ -3,7 +3,7 @@
 MIT License
 
 Copyright (c) 2012 ChaN
-Copyright (c) 2020 Mika Tuupola
+Copyright (c) 2020-2023 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,9 +38,12 @@ SPDX-License-Identifier: MIT
 #ifndef _HAGL_FONTX_H
 #define _HAGL_FONTX_H
 
+#include <stdint.h>
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
 
 #define FONTX_OK                   (0)
 #define FONTX_ERR_GLYPH_NOT_FOUND  (1)
@@ -54,11 +57,8 @@ extern "C" {
 #define FONTX_BLOCK_TABLE_SIZE    (17)
 #define FONTX_BLOCK_TABLE_START   (18)
 
-#include <stdint.h>
-#include <stddef.h>
-
 /* Pitch is bytes per row. Size is size in bytes. */
-typedef struct{
+typedef struct {
     uint8_t width;
     uint8_t height;
     uint8_t size;
@@ -66,7 +66,7 @@ typedef struct{
     const uint8_t *buffer;
 } fontx_glyph_t;
 
-typedef struct{
+typedef struct {
     char name[9];
     uint8_t width;
     uint8_t height;
@@ -78,5 +78,6 @@ uint8_t fontx_glyph(fontx_glyph_t *glyph, wchar_t code, const uint8_t *font);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
+
 #endif /* _HAGL_FONTX_H */
